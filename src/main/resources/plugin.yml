@@ -1,6 +1,6 @@
-name: MLG Rush
+name: MLG-Rush
 version: ${project.version}
 main: dev.invasion.plugins.games.mlgrush.MLGRush
-api-version: 1.16
+api-version: 1.15
 authors: [toqix]
 description: Mlg rush plugin for Invasion server network
