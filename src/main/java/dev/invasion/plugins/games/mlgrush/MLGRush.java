@@ -15,6 +15,9 @@ public final class MLGRush extends JavaPlugin {
         this.getLogger().info("MLG-Rush v2 enabled");
 
     }
+    public void reload() {
+
+    }
 
     public static void setInstance(MLGRush insta) {
         instance = insta;
