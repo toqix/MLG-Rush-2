@@ -10,12 +10,17 @@ public final class MLGRush extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        setInstance(this);
         // Plugin startup logic
         this.getLogger().info("MLG-Rush v2 enabled");
+
     }
 
-    public static setInstance(MLGRush insta) {
+    public static void setInstance(MLGRush insta) {
         instance = insta;
+    }
+    public static MLGRush getInstance() {
+        return instance;
     }
 
     public static String getGameName() {
@@ -26,7 +31,7 @@ public final class MLGRush extends JavaPlugin {
         mainworld = world;
     }
     public static World getWorld() {
-        return world;
+        return mainworld;
     }
 
     @Override
