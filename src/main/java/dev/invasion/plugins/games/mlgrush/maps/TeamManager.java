@@ -1,5 +1,4 @@
 package dev.invasion.plugins.games.mlgrush.maps;
-
 import java.util.ArrayList;
 
 public class TeamManager {
@@ -7,8 +6,11 @@ public class TeamManager {
     private ArrayList<Team> teams;
     private int teamSize;
 
-    public void setTeamSize(int size) {
-        teamSize = size;
+    public TeamManager(){
+        teamSize = 1;
+        teams = new ArrayList<>();
+        teams.add(new Team(TeamColor.RED));
+        teams.add(new Team(TeamColor.BLUE));
     }
 
     public void setTeams(int amount) {
@@ -25,5 +27,4 @@ public class TeamManager {
             teams.add(new Team(col));
         }
     }
-
 }

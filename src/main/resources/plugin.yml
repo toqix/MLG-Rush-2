@@ -4,3 +4,15 @@ main: dev.invasion.plugins.games.mlgrush.MLGRush
 api-version: 1.15
 authors: [toqix]
 description: Mlg rush plugin for Invasion server network
+commands:
+  join:
+    description: Fritz ist gaga
+  create:
+    description: Fritz ist sehr gaga
+    permission: MLG-Rush.createGame
+  spectate:
+    description: Fritz ist sehr sehr sehr gaga
+  build:
+  debug:
+    description: enables Debug Output
+    permission: MLG-Rush.debug

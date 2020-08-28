@@ -6,6 +6,7 @@ import dev.invasion.plugins.games.mlgrush.maps.SerializableLocation;
 import org.bukkit.GameMode;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,15 +17,15 @@ public class FileManager {
     private static String normalPath = MLGRush.getInstance().getDataFolder().getAbsolutePath();
 
     public static void save(Object toSave, String fileName) throws IOException{
-        String filePath = normalPath + fileName;
+        String filePath = normalPath + "/" + fileName;
         File file = new File(filePath);
         generateIfNonexistent(file);
         String save = gson.toJson(toSave);
         Files.write(Paths.get(file.getAbsolutePath()), save.getBytes());
     }
 
-    public Object load(Class<Object> type, String fileName) throws IOException {
-        String filePath = normalPath + fileName;
+    public static Object load(Type type, String fileName) throws IOException {
+        String filePath = normalPath + "/" + fileName;
         File file = new File(filePath);
         generateIfNonexistent(file);
         InputStream is = new FileInputStream(file);

@@ -11,4 +11,8 @@ public class Team {
     public Team(TeamColor color) {
         this.color = color;
     }
+
+    public void setBed(Respawn bed) {
+        this.bed = bed;
+    }
 }
