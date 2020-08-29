@@ -12,10 +12,9 @@ import org.bukkit.entity.Player;
 public class debugCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        PlayerDataManager manager = MLGRush.getPlayerDataManager();
         Player player = (Player) sender;
-        manager.getPlayerData(player).setDebugOutput(!manager.getPlayerData(player).isDebugOutput());
-        if(manager.getPlayerData(player).isDebugOutput()) {
+        PlayerDataManager.getPlayerData(player).setDebugOutput(!PlayerDataManager.getPlayerData(player).isDebugOutput());
+        if(PlayerDataManager.getPlayerData(player).isDebugOutput()) {
             player.sendMessage(MessageCreator.prefix("&7You &aenabled&7 Debug Output"));
         }else {
             player.sendMessage(MessageCreator.prefix("&7You &cdisabled&7 Debug Output"));

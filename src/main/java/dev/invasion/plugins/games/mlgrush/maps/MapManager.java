@@ -3,9 +3,13 @@ package dev.invasion.plugins.games.mlgrush.maps;
 import java.util.ArrayList;
 
 public class MapManager {
-    private ArrayList<gameMap> Maps = new ArrayList<>();
+    private ArrayList<gameMap> Maps;
 
-    public ArrayList getMaps() {
+    public MapManager() {
+        Maps = new ArrayList<gameMap>();
+    }
+
+    public ArrayList<gameMap> getMaps() {
         return Maps;
     }
 

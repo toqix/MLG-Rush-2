@@ -16,3 +16,7 @@ commands:
   debug:
     description: enables Debug Output
     permission: MLG-Rush.debug
+  load:
+    permission: MLG-Rush.reload
+  save:
+    permission: MLG-Rush.reload

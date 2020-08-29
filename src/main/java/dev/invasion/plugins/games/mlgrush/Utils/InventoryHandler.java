@@ -1,5 +1,6 @@
 package dev.invasion.plugins.games.mlgrush.Utils;
 
+import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
 
 import org.bukkit.*;
@@ -52,6 +53,7 @@ public class InventoryHandler implements Listener {
             }
         } else {
             switch (command) {
+                case 'b':BuildModeManager.handleClick(arguments, player);break;
 
             }
         }

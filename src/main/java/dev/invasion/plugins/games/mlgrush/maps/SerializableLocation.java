@@ -29,6 +29,7 @@ public class SerializableLocation {
         pitch = Math.round(loc.getPitch());
     }
 
+
     public SerializableLocation(int xc, int yc,  int zc) {
         x = xc;
         y = yc;

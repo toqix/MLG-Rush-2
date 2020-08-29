@@ -50,6 +50,18 @@ public class BoundingBox implements Serializable {
         z2 = middle.getZ() + radius;
 
     }
+    public BoundingBox(SerializableLocation middle, int xradius, int zradius, int height) {
+        /*
+        Returns quadratic BoundingBox
+         */
+        y1 = 0;
+        y2 = height;
+        x1 = middle.getX() - xradius;
+        x2 = middle.getX() + xradius;
+        z1 = middle.getZ() - zradius;
+        z2 = middle.getZ() + zradius;
+
+    }
 
     public double getX1() {
         return this.x1;

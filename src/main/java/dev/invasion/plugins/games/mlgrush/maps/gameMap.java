@@ -9,17 +9,16 @@ public class gameMap {
 
 
     private BoundingBox box;
-
-
-
+    private String name;
     private String builder;
     private TeamManager teamManager;
     private boolean isAvailable;
     private boolean isFinished;
 
-    public gameMap(SerializableLocation specSpawn, BoundingBox box) {
+    public gameMap(SerializableLocation specSpawn, BoundingBox box, String name) {
         this.specSpawn = specSpawn;
         isAvailable = true;
+        this.name = name;
         this.box = box;
         this.teamManager = new TeamManager();
         builder = "Unknown";

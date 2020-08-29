@@ -14,14 +14,14 @@ import java.util.UUID;
 public class PlayerDataManager implements Listener {
     private static HashMap<UUID, PlayerData> playerDataHashMap = new HashMap<>();
 
-    public PlayerData getPlayerData(Player player) {
+    public static PlayerData getPlayerData(Player player) {
         if (!playerDataHashMap.containsKey(player.getUniqueId())) {
             playerDataHashMap.put(player.getUniqueId(), new PlayerData());
         }
         return playerDataHashMap.get(player.getUniqueId());
     }
 
-    public ArrayList<Player> getPlayers(PlayerState state) {
+    public static ArrayList<Player> getPlayers(PlayerState state) {
         ArrayList<Player> players = new ArrayList<>();
         for(Map.Entry<UUID, PlayerData> player:playerDataHashMap.entrySet()) {
             if(player.getValue().getState() == state) {
@@ -31,7 +31,7 @@ public class PlayerDataManager implements Listener {
         return players;
     }
 
-    public ArrayList<Player> getDebugPlayers() {
+    public static ArrayList<Player> getDebugPlayers() {
         ArrayList<Player> players = new ArrayList<>();
         for(Map.Entry<UUID, PlayerData> player:playerDataHashMap.entrySet()) {
             if(player.getValue().isDebugOutput()) {
