@@ -1,5 +1,6 @@
 package dev.invasion.plugins.games.mlgrush.PlayerData;
 
+import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,6 +26,15 @@ public class PlayerDataManager implements Listener {
         ArrayList<Player> players = new ArrayList<>();
         for(Map.Entry<UUID, PlayerData> player:playerDataHashMap.entrySet()) {
             if(player.getValue().getState() == state) {
+                players.add(Bukkit.getPlayer(player.getKey()));
+            }
+        }
+        return players;
+    }
+    public static ArrayList<Player> getPlayers(gameMap map) {
+        ArrayList<Player> players = new ArrayList<>();
+        for(Map.Entry<UUID, PlayerData> player:playerDataHashMap.entrySet()) {
+            if(player.getValue().getMap() == map) {
                 players.add(Bukkit.getPlayer(player.getKey()));
             }
         }

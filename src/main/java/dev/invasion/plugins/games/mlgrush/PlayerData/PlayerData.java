@@ -10,7 +10,7 @@ public class PlayerData {
     private gameMap map;
 
     public PlayerData() {
-        state = PlayerState.LOBBY;
+        state = PlayerState.LOBBY;page=0;
     }
 
     public void setDebugOutput(boolean debugOutput) {

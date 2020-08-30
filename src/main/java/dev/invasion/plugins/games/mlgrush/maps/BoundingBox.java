@@ -54,8 +54,8 @@ public class BoundingBox implements Serializable {
         /*
         Returns quadratic BoundingBox
          */
-        y1 = 0;
-        y2 = height;
+        y1 = 100 - height;
+        y2 = 100 + height;
         x1 = middle.getX() - xradius;
         x2 = middle.getX() + xradius;
         z1 = middle.getZ() - zradius;

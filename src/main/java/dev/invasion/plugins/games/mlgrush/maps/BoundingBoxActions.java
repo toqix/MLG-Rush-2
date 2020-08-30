@@ -144,7 +144,9 @@ public class BoundingBoxActions {
         double z2 = box.getZ2();
         double vol = (Math.abs((x1 - x2)) + 1) * (Math.abs(y1 - y2) + 1) * (Math.abs(z1 - z2) + 1);
         //Bukkit.broadcastMessage("x diff is " + Math.abs((x1 - x2)) + " y diff is " + Math.abs(y1 - y2) + " z diff is " + Math.abs(z1 - z2));
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] Executing task &aDELETE&7, deleting " + vol + " blocks."));
+        for (Player player : PlayerDataManager.getDebugPlayers()) {
+            player.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] Executing task &aDELETE&7, deleting " + vol + " blocks."));
+        }
         int repl = 0;
         double times = 0;
         double diff = (y2 - y1);
@@ -154,7 +156,7 @@ public class BoundingBoxActions {
             percent = Math.round(percent);
             if (percent > 10) {
                 DecimalFormat df = new DecimalFormat("###.#");
-                for (Player players : Bukkit.getOnlinePlayers()) {
+                for (Player players : PlayerDataManager.getDebugPlayers()) {
                     MessageCreator.sendTitle(players, "&a" + df.format(percent) + "% done", "&cDeleting map...", 20000, false);
                 }
             }
@@ -170,13 +172,13 @@ public class BoundingBoxActions {
         }
         long finish = System.nanoTime();
         long duration = (finish - start) / 1000000;
-        if (times != vol) {
-            Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cERROR: &7Checked blocks &7(" + times + ") &cdo not align with calculated &7(" + vol + ") &cblocks!"));
-        }
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cDeleted &7" + times + " blocks; Time: " + duration + "ms."));
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &aFinished task DELETE."));
-        for (Player players : Bukkit.getOnlinePlayers()) {
-            MessageCreator.sendTitle(players, "&aDone", "&7Deleted map in " + duration + "ms", 40);
+        for (Player player : PlayerDataManager.getDebugPlayers()) {
+            if (times != vol) {
+                player.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cERROR: &7Checked blocks &7(" + times + ") &cdo not align with calculated &7(" + vol + ") &cblocks!"));
+            }
+            player.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cDeleted &7" + times + " blocks; Time: " + duration + "ms."));
+            player.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &aFinished task DELETE."));
+            MessageCreator.sendTitle(player, "&aDone", "&7Deleted map in " + duration + "ms", 40);
         }
     }
 
@@ -203,7 +205,9 @@ public class BoundingBoxActions {
             player.setFlying(true);
             player.setGameMode(GameMode.CREATIVE);
         }
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] Executing task &aCHECK_EMPTY&7, checking " + vol + " blocks."));
+        for (Player player1 : PlayerDataManager.getDebugPlayers()) {
+            player1.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] Executing task &aCHECK_EMPTY&7, checking " + vol + " blocks."));
+        }
         double times = 0;
         int notAir = 0;
         double diff = (y2 - y1);
@@ -212,7 +216,7 @@ public class BoundingBoxActions {
             double percent = 100 - (done / diff) * 100;
             if (percent > 10) {
                 DecimalFormat df = new DecimalFormat("###.#");
-                for (Player players : Bukkit.getOnlinePlayers()) {
+                for (Player players : PlayerDataManager.getDebugPlayers()) {
                     MessageCreator.sendTitle(players, "&a" + df.format(percent), "&7Checking block...", 20000);
                 }
             }
@@ -231,11 +235,13 @@ public class BoundingBoxActions {
         }
         long finish = System.nanoTime();
         long duration = (finish - start) / 1000000;
-        if (times != vol) {
-            Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cERROR: &7Checked blocks &7(" + times + ") &cdo not align with calculated &7(" + vol + ") &cblocks!"));
+        for (Player player1 : PlayerDataManager.getDebugPlayers()) {
+            if (times != vol) {
+                player1.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &cERROR: &7Checked blocks &7(" + times + ") &cdo not align with calculated &7(" + vol + ") &cblocks!"));
+            }
+            player1.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &7Checked " + times + " blocks; Found " + notAir + " not air blocks; Time: " + duration + "ms."));
+            player1.sendMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &aFinished task CHECK_EMPTY."));
         }
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &7Checked " + times + " blocks; Found " + notAir + " not air blocks; Time: " + duration + "ms."));
-        Bukkit.broadcastMessage(MessageCreator.t("&7[" + MLGRush.getGameName() + "&7] &aFinished task CHECK_EMPTY."));
         player.teleport(previous);
         player.setGameMode(GameMode.SURVIVAL);
         player.setAllowFlight(false);

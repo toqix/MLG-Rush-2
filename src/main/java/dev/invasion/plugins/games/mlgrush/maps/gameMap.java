@@ -14,6 +14,7 @@ public class gameMap {
     private TeamManager teamManager;
     private boolean isAvailable;
     private boolean isFinished;
+    private MapState mapState;
 
     public gameMap(SerializableLocation specSpawn, BoundingBox box, String name) {
         this.specSpawn = specSpawn;
@@ -58,5 +59,21 @@ public class gameMap {
 
     public boolean finished() {
         return isFinished;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public MapState getMapState() {
+        return mapState;
+    }
+
+    public void setMapState(MapState mapState) {
+        this.mapState = mapState;
     }
 }

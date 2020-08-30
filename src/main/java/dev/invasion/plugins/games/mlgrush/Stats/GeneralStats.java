@@ -5,6 +5,15 @@ public class GeneralStats {
     private int totalDeaths;
     private int totalPlayedGames;
     private int totalPlayersPlayed;
+    private int totalMaps;
+
+    public int getTotalMaps() {
+        return totalMaps;
+    }
+
+    public void setTotalMaps(int totalMaps) {
+        this.totalMaps = totalMaps;
+    }
 
     public int getTotalKills() {
         return totalKills;

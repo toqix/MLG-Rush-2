@@ -7,10 +7,7 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
 import dev.invasion.plugins.games.mlgrush.Utils.File.FileManager;
 import dev.invasion.plugins.games.mlgrush.Utils.InventoryHandler;
-import dev.invasion.plugins.games.mlgrush.maps.BoundingBox;
-import dev.invasion.plugins.games.mlgrush.maps.MapManager;
-import dev.invasion.plugins.games.mlgrush.maps.SerializableLocation;
-import dev.invasion.plugins.games.mlgrush.maps.gameMap;
+import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -92,6 +89,7 @@ public final class MLGRush extends JavaPlugin {
         getCommand("debug").setExecutor(new debugCommand());
         getCommand("load").setExecutor(new loadCommand());
         getCommand("save").setExecutor(new saveCommand());
+        getCommand("spawn").setExecutor(new spawnCommand());
     }
 
     private void listenerRegistration() {
@@ -114,6 +112,10 @@ public final class MLGRush extends JavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
            // getLogger().info("error couldn't load File " + "Stats.json");
+        }
+        for(gameMap map: mapManager.getMaps()) {
+            map.setMapState(MapState.WAITING);
+            map.setAvailable(true);
         }
     }
     public static void save() {

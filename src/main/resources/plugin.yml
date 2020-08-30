@@ -20,3 +20,4 @@ commands:
     permission: MLG-Rush.reload
   save:
     permission: MLG-Rush.reload
+  spawn:

@@ -18,11 +18,11 @@ public class MapManager {
     }
 
     public gameMap getMap(int id) {
-        /*if(id >= 0 && Maps.size() <= id) {
+        if(id >= 0 && id < Maps.size()) {
            return Maps.get(id);
         }else {
             return null;
-        }*/
-        return Maps.get(id);
+        }
+
     }
 }

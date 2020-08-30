@@ -6,11 +6,5 @@ import org.bukkit.inventory.Inventory;
 import java.util.Arrays;
 
 public class Inventories {
-    public static Inventory BuildMode() {
-        Inventory inv = InventoryHandler.createInventory("&6Build&7Mode");
 
-        inv.setItem(20, InventoryHandler.createStack(Material.SANDSTONE, "&cCreate&7 a new Map", Arrays.asList("&7Start Building a brand new Map"),"b(create)", true));
-
-        return inv;
-    }
 }
