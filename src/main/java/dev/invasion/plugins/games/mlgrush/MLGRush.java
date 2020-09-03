@@ -1,5 +1,6 @@
 package dev.invasion.plugins.games.mlgrush;
 
+import dev.invasion.plugins.games.mlgrush.BuildMode.BuildListeners;
 import dev.invasion.plugins.games.mlgrush.Commands.*;
 import dev.invasion.plugins.games.mlgrush.Listener.joinListener;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
@@ -97,6 +98,7 @@ public final class MLGRush extends JavaPlugin {
         manager.registerEvents(new joinListener(), this);
         manager.registerEvents(new PlayerDataManager(), this);
         manager.registerEvents(new InventoryHandler(), this);
+        manager.registerEvents(new BuildListeners(), this);
     }
 
     public static void load() {

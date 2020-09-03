@@ -43,22 +43,50 @@ public class BuildModeManager {
                 }.runTaskLater(MLGRush.getInstance(), 5);
                 break;
             case "notemptyabort":
-                player.kickPlayer(MessageCreator.kickCreator("&cPlugin error", "&7aborting Map creation please rejoin and try again", false));break;
+                player.kickPlayer(MessageCreator.kickCreator("&cPlugin error", "&7aborting Map creation please rejoin and try again", false));
+                break;
             case "rename":
                 renameMap(player);
                 break;
             case "deleterequest":
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        InvOpener.openDelay(player, BuildModeInvs.Delete());
-                    }
-                }.runTaskLater(MLGRush.getInstance(), 5);break;
+                InvOpener.openDelay(player, BuildModeInvs.Delete());
+                break;
 
             case "delete":
                 InvOpener.closeDelay(player);
-                deleteMap(player);break;
-            case "cancel":InvOpener.closeDelay(player);break;
+                deleteMap(player);
+                break;
+            case "cancel":
+                InvOpener.closeDelay(player);
+                break;
+            case "leave":
+                InvOpener.closeDelay(player);
+                handleLeave(player);
+                break;
+            case "main":
+                InvOpener.openDelay(player, BuildModeInvs.BuildInv(PlayerDataManager.getPlayerData(player).getMap()));
+                break;
+            case "teams":
+                InvOpener.openDelay(player, BuildModeInvs.TeamsInv(PlayerDataManager.getPlayerData(player).getMap()));
+                break;
+            case "rteam":
+                removeTeam(player);
+                break;
+            case "ateam":
+                addTeam(player);
+                break;
+            case "+size":
+                PlayerDataManager.getPlayerData(player).getMap().getTeamManager().setTeamSize(PlayerDataManager.getPlayerData(player).getMap().getTeamManager().getTeamSize() + 1);
+                InvOpener.openDelay(player, BuildModeInvs.TeamsInv(PlayerDataManager.getPlayerData(player).getMap()));
+                break;
+            case "-size":
+                PlayerDataManager.getPlayerData(player).getMap().getTeamManager().setTeamSize(PlayerDataManager.getPlayerData(player).getMap().getTeamManager().getTeamSize() - 1);
+                InvOpener.openDelay(player, BuildModeInvs.TeamsInv(PlayerDataManager.getPlayerData(player).getMap()));
+                break;
+            case "finish":
+                finishMap(player);
+                InvOpener.closeDelay(player);
+                break;
         }
     }
 
@@ -91,7 +119,7 @@ public class BuildModeManager {
         location.add(0, 0, 95);
         BoundingBox box = new BoundingBox(location, 50, 30, 20);
         int notEmpty = BoundingBoxActions.checkEmpty(box);
-        if (notEmpty > 20) {
+        if (notEmpty > 20 && !delete) {
             player.teleport(MLGRush.getLobbySpawn().getTpLocation());
             new BukkitRunnable() {
                 @Override
@@ -117,6 +145,11 @@ public class BuildModeManager {
         playerData.setMap(map);
 
         BoundingBoxActions.replace(Material.SANDSTONE, map.getBoundingBox());
+        for(Team team : map.getTeamManager().getTeams()) {
+            if(team.getBed() != null) {
+                team.getBed().setBlock();
+            }
+        }
         player.teleport(map.getSpecSpawn().getTpLocation());
         player.setGameMode(GameMode.CREATIVE);
         player.setFlying(true);
@@ -154,10 +187,33 @@ public class BuildModeManager {
         }
     }
 
+    public static void handleLeave(Player player) {
+        PlayerData data = PlayerDataManager.getPlayerData(player);
+        if (data.getState() == PlayerState.BUILD) {
+            gameMap map = data.getMap();
+            if (PlayerDataManager.getPlayers(map).size() == 1) {
+                map.setFinished(false);
+                map.setMapState(MapState.WAITING);
+                map.setAvailable(true);
+            }
+            leaveBuild(player);
+        }
+    }
+
+    public static void leaveBuild(Player player) {
+        PlayerData data = PlayerDataManager.getPlayerData(player);
+        data.setState(PlayerState.LOBBY);
+        data.setMap(null);
+        player.teleport(MLGRush.getLobbySpawn().getTpLocation());
+        player.setFlying(false);
+        player.setGameMode(GameMode.SURVIVAL);
+        player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&7You &cleft &7BuildMode"));
+    }
+
     public static void deleteMap(Player player) {
         PlayerData playerData = PlayerDataManager.getPlayerData(player);
-        if(playerData.getState() == PlayerState.BUILD) {
-            if (player.isOp()) {
+        if (playerData.getState() == PlayerState.BUILD) {
+            if (player.hasPermission("MLG-Rush.DeleteMap")) {
                 player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "Map &cdeletion&7 was initiated!"));
                 playerData.setDebugOutput(true);
                 gameMap map = playerData.getMap();
@@ -165,9 +221,66 @@ public class BuildModeManager {
                 MLGRush.getMapManager().getMaps().remove(map);
                 playerData.setDebugOutput(false);
                 player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "Map was &cdeleted&7 successfully"));
+                for (Player player1 : PlayerDataManager.getPlayers(map)) {
+                    leaveBuild(player1);
+                }
             } else {
                 player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "Couldn't initiate deletion! no permission"));
             }
+        }
+    }
+    public static void finishMap(Player player) {
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        if(playerData.getState() == PlayerState.BUILD) {
+            gameMap map = playerData.getMap();
+            if(checkFinished(map)) {
+                map.setMapState(MapState.WAITING);
+                map.setFinished(true);
+                map.setAvailable(true);
+                for(Player player1: PlayerDataManager.getPlayers(map)) {
+                    MessageCreator.sendTitle(player1, "&aMap finished", "Your map will be saved", 50, true);
+                    player1.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&6" + player.getName() + " &7saved the Map"));
+                    leaveBuild(player1);
+                }
+            }else {
+                player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cSorry you can't finish this map it's not fully configured yet"));
+            }
+        }
+
+    }
+
+    public static boolean checkFinished(gameMap map) {
+        if (map.getTeamManager() == null) return false;
+
+        for (Team team : map.getTeamManager().getTeams()) {
+            if (team.getSpawn() == null) return false;
+            if (team.getBed() == null) return false;
+            if (team.getColor() == null) return false;
+        }
+
+        if(map.getBoundingBox() == null) return false;
+        if(map.getName() == null) return false;
+
+        return true;
+    }
+
+    public static void addTeam(Player player) {
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        if (playerData.getState() == PlayerState.BUILD) {
+            gameMap map = playerData.getMap();
+            map.getTeamManager().addTeam();
+            InvOpener.openDelay(player, BuildModeInvs.TeamsInv(map));
+            player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&aadded&7 a Team"));
+        }
+    }
+
+    public static void removeTeam(Player player) {
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        if (playerData.getState() == PlayerState.BUILD) {
+            gameMap map = playerData.getMap();
+            map.getTeamManager().removeTeam();
+            InvOpener.openDelay(player, BuildModeInvs.TeamsInv(map));
+            player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cremoved&7 a Team"));
         }
     }
 

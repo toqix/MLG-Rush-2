@@ -27,5 +27,11 @@ public class Respawn {
         }
     }
 
+    public SerializableLocation getLocation() {
+        return location;
+    }
 
+    public BlockFace getRotation() {
+        return rotation;
+    }
 }

@@ -6,10 +6,10 @@ import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
 import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
+import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
 
-import dev.invasion.plugins.games.mlgrush.maps.MapManager;
-import dev.invasion.plugins.games.mlgrush.maps.gameMap;
+import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,8 @@ public class InventoryHandler implements Listener {
     Please enter your command definitions here:
     b: BuildMode Commands
     e: edit command + map id
+    s: spawnpoints
+    z: beds
 
     */
     private List<String> others = Arrays.asList("BOW");
@@ -80,6 +83,86 @@ public class InventoryHandler implements Listener {
                             }
                             break;
 
+                    }
+                case 'z':
+                    if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.BUILD) {
+                        TeamColor color = TeamColor.valueOf(arguments);
+                        if (clicked == null) {
+                            Team team = PlayerDataManager.getPlayerData(player).getMap().getTeamManager().getTeam(color);
+                            InvOpener.closeDelay(player);
+                            player.getInventory().setItem(0, InventoryHandler.createStack(Material.RED_BED, "&7Team " + team.getName(), Arrays.asList("&7Set the Bed from", team.getName()), "z(" + team.getColor().name() + ")"));
+                            return true;
+                        }
+                        gameMap map = PlayerDataManager.getPlayerData(player).getMap();
+                        Respawn bed = map.getTeamManager().getTeam(color).getBed();
+                        if (bed != null) {
+                            Block block = bed.getLocation().getBlock();
+                            block.setType(Material.AIR);
+                            block.getRelative(bed.getRotation()).setType(Material.AIR);
+                        }
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                BlockFace facing = null;
+                                for (BlockFace face : BlockFace.values()) {
+                                    if (face == BlockFace.SELF)
+                                        continue;
+                                    if (clicked.getRelative(face, 1).getType().toString().endsWith("BED")) {
+                                        facing = face;
+                                        break;
+                                    }
+                                }
+                                if (facing == null) {
+                                    player.sendMessage(MessageCreator.t("&7[&aBuildMode&7] Error: could not find the correct direction, make sure no beds are nearby!"));
+                                    MessageCreator.sendTitle(player, "&cFailure!", "&7Please look in the chat", 75);
+                                } else {
+                                    map.getTeamManager().getTeam(color).setBed(new Respawn(new SerializableLocation(clicked), facing));
+                                    clicked.setType(Material.AIR);
+                                    clicked.getRelative(facing).setType(Material.AIR);
+                                    MessageCreator.sendTitle(player, "&6Bed set", "&asuccessfully", 40, true);
+                                    new BukkitRunnable() {
+                                        @Override
+                                        public void run() {
+                                            map.getTeamManager().getTeam(color).getBed().setBlock();
+                                            player.getInventory().setItem(0, new ItemStack(Material.AIR));
+                                            InvOpener.openDelay(player, BuildModeInvs.TeamsInv(map));
+                                        }
+                                    }.runTaskLater(MLGRush.getInstance(), 5);
+                                }
+                            }
+                        }.runTaskLater(MLGRush.getInstance(), 1);
+                        return false;
+
+                    }
+                case 's':
+                    PlayerData playerData = PlayerDataManager.getPlayerData(player);
+                    if (playerData.getState() == PlayerState.BUILD) {
+                        TeamColor color = TeamColor.valueOf(arguments);
+                        Team team = playerData.getMap().getTeamManager().getTeam(color);
+                        if (clicked == null) {
+                            InvOpener.closeDelay(player);
+                            player.getInventory().setItem(0, InventoryHandler.createStack(Material.NETHER_STAR, "&7Team " + team.getName() + " &7Spawn", Arrays.asList("&7Set the Spawn from", team.getName()), "s(" + team.getColor().name() + ")"));
+                            return true;
+                        }
+                        SerializableLocation spawn = new SerializableLocation(clicked);
+                        //get direction is still missing
+                        team.setSpawn(spawn);
+                        player.getInventory().setItem(0, new ItemStack(Material.AIR));
+                        player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&7Spawnpoint of Team " + team.getName() + "&7 successfully set"));
+                        MessageCreator.sendTitle(player, team.getName(), "&6Spawnpoint set", 50, true);
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                player.teleport(team.getSpawn().getTpLocation());
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        InvOpener.openDelay(player, BuildModeInvs.TeamsInv(playerData.getMap()));
+                                    }
+                                }.runTaskLater(MLGRush.getInstance(), 10);
+                            }
+                        }.runTaskLater(MLGRush.getInstance(), 10);
+                        return true;
                     }
             }
         }
@@ -119,7 +202,8 @@ public class InventoryHandler implements Listener {
     }
 
     //Main InventoryHandler method
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, String commandRightClick, boolean enchanted, int amount, boolean unmoveable) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String
+            command, String commandRightClick, boolean enchanted, int amount, boolean unmoveable) {
         ItemStack stack = new ItemStack(material, amount);
         ItemMeta stack_meta = stack.getItemMeta();
         assert stack_meta != null;
@@ -147,11 +231,13 @@ public class InventoryHandler implements Listener {
     }
 
     //Other StackCreators which access the method above
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, String rightCommand, boolean ench, int amount) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String
+            command, String rightCommand, boolean ench, int amount) {
         return createStack(material, name, lore, command, rightCommand, ench, amount, true);
     }
 
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, String rightCommand) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String
+            command, String rightCommand) {
         return createStack(material, name, lore, command, rightCommand, false, 1);
     }
 
@@ -160,11 +246,13 @@ public class InventoryHandler implements Listener {
     }
 
 
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, String rightCommand, boolean enchanted) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String
+            command, String rightCommand, boolean enchanted) {
         return createStack(material, name, lore, command, rightCommand, enchanted, 1);
     }
 
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, boolean enchanted) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String command,
+                                        boolean enchanted) {
         return createStack(material, name, lore, command, "", enchanted, 1);
     }
 
@@ -180,7 +268,8 @@ public class InventoryHandler implements Listener {
         return createStack(material, name, lore, command, "", false, 1);
     }
 
-    public static ItemStack createStack(Material material, String name, List<String> lore, String command, int amount) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, String command,
+                                        int amount) {
         return createStack(material, name, lore, command, "", false, amount);
     }
 
@@ -188,7 +277,8 @@ public class InventoryHandler implements Listener {
         return createStack(material, name, lore, "", "", false, 1);
     }
 
-    public static ItemStack createStack(Material material, String name, List<String> lore, boolean ench, boolean moveable) {
+    public static ItemStack createStack(Material material, String name, List<String> lore, boolean ench,
+                                        boolean moveable) {
         return createStack(material, name, lore, "", "", ench, 1, moveable);
     }
 

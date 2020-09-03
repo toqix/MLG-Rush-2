@@ -6,9 +6,8 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
 import dev.invasion.plugins.games.mlgrush.Utils.InvOpener;
 import dev.invasion.plugins.games.mlgrush.Utils.InventoryHandler;
-import dev.invasion.plugins.games.mlgrush.maps.BoundingBox;
-import dev.invasion.plugins.games.mlgrush.maps.MapState;
-import dev.invasion.plugins.games.mlgrush.maps.gameMap;
+import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
+import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -74,19 +73,74 @@ public class BuildModeInvs {
     public static Inventory BuildInv(gameMap map) {
         Inventory inv = InventoryHandler.createInventory("&6Build&7Mode");
         ArrayList<String> lore = new ArrayList<>();
-        lore.add("&7info will be added later");
-
+        if(BuildModeManager.checkFinished(map)) {
+            lore.add("&aThe map is fully configured");
+            lore.add("&aand can be finished now");
+        }else {
+            lore.add("&6Teams: ");
+            for (Team team : map.getTeamManager().getTeams()) {
+                StringBuilder string = new StringBuilder();
+                string.append("Team: ").append(team.getName()).append("&7 : ");
+                if (team.getBed() == null) string.append("&cBed missing");
+                if (team.getSpawn() == null) string.append(" &cSpawn missing");
+                if (team.getBed() != null && team.getSpawn() != null) string.append("&aeverything set");
+                lore.add(string.toString());
+            }
+        }
+        inv.setItem(8, InventoryHandler.createStack(Material.GREEN_DYE, "&aFinish", Arrays.asList("&6Quits Build Mode", "&7Saves Map", "&7and makes it playable"), "b(finish)"));
         inv.setItem(13, InventoryHandler.createStack(Material.BOOK, "&6Info", lore, true));
-        inv.setItem(9, InventoryHandler.createStack(Material.BOOK, "&aRe&7name", Arrays.asList("&7Rename the Map"), "b(rename)", false));
+        inv.setItem(9, InventoryHandler.createStack(Material.BOOK, "&aRe&7name", Collections.singletonList("&7Rename the Map"), "b(rename)", false));
         inv.setItem(17, InventoryHandler.createStack(Material.RED_DYE, "&cDelete Map", Arrays.asList("&7Deletes the whole map", "&7this is &cpermanent&7 there's", "&cno backup"), "b(deleterequest)"));
+        inv.setItem(0, InventoryHandler.createStack(Material.BARRIER, "&7Leave", Arrays.asList("&7Leaves the Build,", "&7but doesn't finish the Map"), "b(leave)"));
+        inv.setItem(22, InventoryHandler.createStack(Material.RED_BED, "&6Teams", Arrays.asList("&7Set the Bed for each Team", "&7Create or delete Teams", "&7Set Team Spawns"), "b(teams)"));
 
+        return inv;
+    }
+    public static Inventory TeamsInv(gameMap map) {
+        Inventory inv = InventoryHandler.createInventory("&6Teams");
+
+        inv.setItem(22, InventoryHandler.createStack(Material.SANDSTONE, "&6Main", Arrays.asList("&7Go back to the", "&7Main Build Inventory"), "b(main)"));
+        TeamManager teams = map.getTeamManager();
+        for(int i = 0; i < teams.getTeams().size(); i++) {
+            Team team = teams.getTeam(i);
+            boolean isSet = false;
+            String info = "&cmissing";
+            Material symbol = Material.RED_BED;
+            if(team.getBed() !=null) {
+                isSet = true;
+                info = "&aalready set";
+                symbol = Material.BARRIER;
+            }
+            if(team !=null) {
+                inv.setItem(i + 27, InventoryHandler.createStack(symbol, "&7Team " + team.getName(), Arrays.asList("&7Set the Bed from", team.getName(), info), "z(" + team.getColor().name() + ")", isSet));
+            }
+        }
+        for(int i = 0; i < teams.getTeams().size(); i++) {
+            Team team = teams.getTeam(i);
+            if(team !=null) {
+                boolean isSet = false;
+                String info = "&cmissing";
+                Material symbol = Material.NETHER_STAR;
+                if(team.getSpawn() !=null) {
+                    symbol = Material.BARRIER;
+                    isSet = true;
+                    info = "&aalready set";
+                }
+                inv.setItem(i + 9, InventoryHandler.createStack(symbol, "&7Team " + team.getName() + " &7Spawn", Arrays.asList("&7Set the Spawn from", team.getName(), info), "s(" + team.getColor().name() + ")", isSet));
+            }
+        }
+        inv.setItem(25, InventoryHandler.createStack(Material.BOOK, "&6Team info", Arrays.asList("&7Team size: " + teams.getTeamSize(), "&7Teams: " + teams.getTeams().size())));
+        inv.setItem(15, InventoryHandler.createStack(Material.RED_DYE, "&cRemove &7a Team", "b(rteam)"));
+        inv.setItem(17, InventoryHandler.createStack(Material.GREEN_DYE, "&aAdd &7a Team", "b(ateam)"));
+        inv.setItem(33, InventoryHandler.createStack(Material.RED_DYE, "Teamsize &c-1", "b(-size)"));
+        inv.setItem(35, InventoryHandler.createStack(Material.GREEN_DYE, "&7Teamsize &a+1", "b(+size)"));
         return inv;
     }
 
     public static Inventory Delete() {
-        Inventory inv = InventoryHandler.createInventory("&lAre you sure");
-        inv.setItem(17, InventoryHandler.createStack(Material.GREEN_DYE, "&aCancel", "b(cancel)"));
-        inv.setItem(26, InventoryHandler.createStack(Material.RED_DYE, "&cDelete", "b(delete)"));
+        Inventory inv = InventoryHandler.createInventory("&lAre you sure", 9);
+        inv.setItem(0, InventoryHandler.createStack(Material.GREEN_DYE, "&aCancel", "b(cancel)"));
+        inv.setItem(8, InventoryHandler.createStack(Material.RED_DYE, "&cDelete", "b(delete)"));
         return inv;
     }
 }
