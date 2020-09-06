@@ -1,3 +1,3 @@
 # MLG-Rush
 
-MLG-Rush Plugin for Bungee Coord servers
+MLG-Rush Plugin for non Bungee Coord servers
