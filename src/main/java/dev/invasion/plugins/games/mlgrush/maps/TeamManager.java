@@ -14,6 +14,7 @@ public class TeamManager {
         teams.add(new Team(TeamColor.BLUE));
     }
 
+
     public void setTeams(int amount) {
         if (amount <= 4 && amount >= 2) {
             teams.clear();
@@ -40,6 +41,11 @@ public class TeamManager {
             }
         }
     }
+
+    public void addTeam(Team team) {
+        teams.add(team);
+    }
+
     public void addTeam() {
         if(teams.size() == 3) {
             teams.add(new Team(TeamColor.YELLOW));

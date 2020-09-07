@@ -3,6 +3,7 @@ package dev.invasion.plugins.games.mlgrush.Utils;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildMode;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeInvs;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
+import dev.invasion.plugins.games.mlgrush.Game.GameManager;
 import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
@@ -48,6 +49,8 @@ public class InventoryHandler implements Listener {
     e: edit command + map id
     s: spawnpoints
     z: beds
+    p: switch pages
+    c: create a game + map id
 
     */
     private List<String> others = Arrays.asList("BOW");
@@ -82,7 +85,16 @@ public class InventoryHandler implements Listener {
                                 InvOpener.openDelay(player, BuildModeInvs.EditMapMode(player));
                             }
                             break;
-
+                        case "++":
+                            PlayerDataManager.getPlayerData(player).setPage(PlayerDataManager.getPlayerData(player).getPage() + 1);
+                            InvOpener.openDelay(player, Inventories.CreateMap(player));
+                            break;
+                        case "--":
+                            if (PlayerDataManager.getPlayerData(player).getPage() > 0) {
+                                PlayerDataManager.getPlayerData(player).setPage(PlayerDataManager.getPlayerData(player).getPage() - 1);
+                                InvOpener.openDelay(player, Inventories.CreateMap(player));
+                            }
+                            break;
                     }
                 case 'z':
                     if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.BUILD) {
@@ -164,6 +176,11 @@ public class InventoryHandler implements Listener {
                         }.runTaskLater(MLGRush.getInstance(), 10);
                         return true;
                     }
+                case 'c':
+                    GameManager.createGame(player, MLGRush.getMapManager().getMap(Integer.parseInt(arguments)));
+                    InvOpener.closeDelay(player);
+                    break;
+
             }
         }
         return true;

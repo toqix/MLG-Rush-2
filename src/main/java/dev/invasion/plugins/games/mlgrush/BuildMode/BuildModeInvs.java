@@ -49,7 +49,7 @@ public class BuildModeInvs {
             gameMap map = MLGRush.getMapManager().getMap(mapId);
             if(map != null) {
                 if (map.getMapState() == MapState.GAME) {
-                    inv.setItem(slot, InventoryHandler.createStack(Material.BARRIER, map.getName(), Arrays.asList("&cThere's an &aactive &c Game", "&con this Map")));
+                    inv.setItem(slot, InventoryHandler.createStack(Material.BARRIER, "&6" + map.getName(), Arrays.asList("&cThere's an &aactive &c Game", "&con this Map")));
                 } else if (map.getMapState() == MapState.BUILD) {
                     ArrayList<String> builderNames = new ArrayList<>();
                     builderNames.add("&7You can &ajoin");
@@ -57,9 +57,13 @@ public class BuildModeInvs {
                         builderNames.add("&6" + builder.getName());
                     }
                     builderNames.add("&7editing this Map");
-                    inv.setItem(slot, InventoryHandler.createStack(Material.SANDSTONE, map.getName(), builderNames, "e(" + mapId + ")", true));
+                    inv.setItem(slot, InventoryHandler.createStack(Material.SANDSTONE, "&6" + map.getName(), builderNames, "e(" + mapId + ")", true));
                 }else if(map.getMapState() == MapState.WAITING) {
-                    inv.setItem(slot, InventoryHandler.createStack(Material.SANDSTONE, map.getName(), Arrays.asList("&aStart&7 editing", "&7this nice Map"), "e(" + mapId + ")"));
+                    if(map.finished()) {
+                        inv.setItem(slot, InventoryHandler.createStack(Material.SANDSTONE, "&6" + map.getName(), Arrays.asList("&aEdit", "&7this nice Map"), "e(" + mapId + ")"));
+                    }else {
+                        inv.setItem(slot, InventoryHandler.createStack(Material.COBBLESTONE, "&6" + map.getName(), Arrays.asList("&aEdit and finish", "&7this &cunfinished&7 Map"), "e(" + mapId + ")"));
+                    }
                 }
             }
 

@@ -51,7 +51,6 @@ public class BuildModeManager {
             case "deleterequest":
                 InvOpener.openDelay(player, BuildModeInvs.Delete());
                 break;
-
             case "delete":
                 InvOpener.closeDelay(player);
                 deleteMap(player);

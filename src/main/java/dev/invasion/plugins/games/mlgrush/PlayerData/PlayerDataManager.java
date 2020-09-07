@@ -17,7 +17,7 @@ public class PlayerDataManager implements Listener {
 
     public static PlayerData getPlayerData(Player player) {
         if (!playerDataHashMap.containsKey(player.getUniqueId())) {
-            playerDataHashMap.put(player.getUniqueId(), new PlayerData());
+            playerDataHashMap.put(player.getUniqueId(), new PlayerData(player));
         }
         return playerDataHashMap.get(player.getUniqueId());
     }
@@ -54,7 +54,7 @@ public class PlayerDataManager implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
          if(!playerDataHashMap.containsKey(event.getPlayer().getUniqueId())) {
-             playerDataHashMap.put(event.getPlayer().getUniqueId(), new PlayerData());
+             playerDataHashMap.put(event.getPlayer().getUniqueId(), new PlayerData(event.getPlayer()));
          }
     }
 }

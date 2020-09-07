@@ -2,7 +2,7 @@ name: MLG-Rush
 version: ${project.version}
 main: dev.invasion.plugins.games.mlgrush.MLGRush
 api-version: 1.15
-authors: [toqix]
+authors: [ toqix ]
 description: Mlg rush plugin for Invasion server network
 commands:
   join:
@@ -12,6 +12,8 @@ commands:
     permission: MLG-Rush.createGame
   spectate:
     description: Fritz ist sehr sehr sehr gaga
+  leave:
+    aliases: l
   build:
   debug:
     description: enables Debug Output
@@ -21,3 +23,9 @@ commands:
   save:
     permission: MLG-Rush.reload
   spawn:
+
+  start:
+    permission: MLG-Rush.start
+    permission-message: You don't have the permission to force start a Game
+  saveinventory:
+    aliases: [si]

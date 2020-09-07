@@ -2,16 +2,19 @@ package dev.invasion.plugins.games.mlgrush;
 
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildListeners;
 import dev.invasion.plugins.games.mlgrush.Commands.*;
+import dev.invasion.plugins.games.mlgrush.Game.Game;
+import dev.invasion.plugins.games.mlgrush.Game.GameManager;
+import dev.invasion.plugins.games.mlgrush.Game.GameRunner;
 import dev.invasion.plugins.games.mlgrush.Listener.joinListener;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
-import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
+import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerSettings;
+import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerSettingsManager;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
 import dev.invasion.plugins.games.mlgrush.Utils.File.FileManager;
 import dev.invasion.plugins.games.mlgrush.Utils.InventoryHandler;
 import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,22 +26,25 @@ public final class MLGRush extends JavaPlugin {
     private static MLGRush instance;
     private static MapManager mapManager;
     private static StatsManager statsManager;
+    private static GameRunner gameRunner;
+    private static PlayerSettingsManager playerSettingsManager;
 
     private static SerializableLocation lobbySpawn = new SerializableLocation(0, 100, 0);
 
     @Override
     public void onEnable() {
+        // Plugin startup logic
         setInstance(this);
         commandRegistration();
-        listenerRegistration();
         setWorld(Bukkit.getWorld("world"));
         setMapManager(new MapManager());
         setStatsManager(new StatsManager());
+        setGameRunner(new GameRunner());
+        setPlayerSettingsManager(new PlayerSettingsManager());
+        listenerRegistration();
         //hardcode Map
         load();
-
-        // Plugin startup logic
-        this.getLogger().info("MLG-Rush v2 enabled");
+        this.getLogger().info("MLG-Rush Rewrite enabled");
 
     }
     public void reload() {
@@ -62,6 +68,14 @@ public final class MLGRush extends JavaPlugin {
         return mapManager;
     }
 
+    public static GameRunner getGameRunner() {
+        return gameRunner;
+    }
+
+    public static void setGameRunner(GameRunner gameRunner) {
+        MLGRush.gameRunner = gameRunner;
+    }
+
     public static void setMapManager(MapManager manager) {
         mapManager = manager;
     }
@@ -74,6 +88,14 @@ public final class MLGRush extends JavaPlugin {
 
     public static String getGameName() {
         return gameName;
+    }
+
+    public static PlayerSettingsManager getPlayerSettingsManager() {
+        return playerSettingsManager;
+    }
+
+    public static void setPlayerSettingsManager(PlayerSettingsManager playerSettingsManager) {
+        MLGRush.playerSettingsManager = playerSettingsManager;
     }
 
     public static void setWorld(World world) {
@@ -91,6 +113,9 @@ public final class MLGRush extends JavaPlugin {
         getCommand("load").setExecutor(new loadCommand());
         getCommand("save").setExecutor(new saveCommand());
         getCommand("spawn").setExecutor(new spawnCommand());
+        getCommand("leave").setExecutor(new leaveCommand());
+        getCommand("start").setExecutor(new startCommand());
+        getCommand("saveinventory").setExecutor(new saveInventoryCommand());
     }
 
     private void listenerRegistration() {
@@ -99,6 +124,8 @@ public final class MLGRush extends JavaPlugin {
         manager.registerEvents(new PlayerDataManager(), this);
         manager.registerEvents(new InventoryHandler(), this);
         manager.registerEvents(new BuildListeners(), this);
+        manager.registerEvents(getGameRunner(), this);
+
     }
 
     public static void load() {
@@ -115,6 +142,12 @@ public final class MLGRush extends JavaPlugin {
             e.printStackTrace();
            // getLogger().info("error couldn't load File " + "Stats.json");
         }
+        try {
+            playerSettingsManager = (PlayerSettingsManager) FileManager.load(PlayerSettingsManager.class, "PlayerSettings.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         for(gameMap map: mapManager.getMaps()) {
             map.setMapState(MapState.WAITING);
             map.setAvailable(true);
@@ -131,6 +164,11 @@ public final class MLGRush extends JavaPlugin {
         }
         try {
           FileManager.save(statsManager, "Stats.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileManager.save(getPlayerSettingsManager(), "PlayerSettings.json");
         } catch (IOException e) {
             e.printStackTrace();
         }

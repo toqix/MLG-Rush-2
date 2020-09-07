@@ -7,6 +7,21 @@ public class PlayerStats {
     private int looses;
     private int wins;
 
+    public void addKill() {
+        kills++;
+    }
+    public void addDeath() {
+        deaths++;
+    }
+    public void addBed() {
+        beds++;
+    }
+    public void addLoos() {
+        looses++;
+    }
+    public void addWin() {
+        wins++;
+    }
     public void setKills(int kills) {
         this.kills = kills;
     }

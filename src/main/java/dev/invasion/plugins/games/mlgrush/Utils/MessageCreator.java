@@ -1,7 +1,9 @@
 package dev.invasion.plugins.games.mlgrush.Utils;
 
 import dev.invasion.plugins.games.mlgrush.MLGRush;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -43,5 +45,9 @@ public class MessageCreator {
     }
     public static String prefix(String message) {
         return translate("&7[&b" + MLGRush.getGameName() + "&7] " + message);
+    }
+    public static void sendActionbar(Player player, String text) {
+        TextComponent textComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, textComponent);
     }
 }

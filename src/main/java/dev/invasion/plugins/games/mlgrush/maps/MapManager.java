@@ -13,6 +13,16 @@ public class MapManager {
         return Maps;
     }
 
+    public ArrayList<gameMap> getMaps(MapState state) {
+        ArrayList<gameMap> toReturn = new ArrayList<>();
+        for(gameMap map: getMaps()) {
+            if(map.getMapState() == state) {
+                toReturn.add(map);
+            }
+        }
+        return toReturn;
+    }
+
     public void addMap(gameMap map) {
         Maps.add(map);
     }
