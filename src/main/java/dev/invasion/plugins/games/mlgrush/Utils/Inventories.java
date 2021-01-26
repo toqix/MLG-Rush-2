@@ -54,6 +54,11 @@ public class Inventories {
 
         return inv;
     }
+    public static Inventory joinGameInv() {
+        Inventory inv = InventoryHandler.createInventory("Choos a Game tp §6join§/spectate");
+
+        return inv;
+    }
 
     public static void loadGameInv(Player player) {
         player.getInventory().clear();

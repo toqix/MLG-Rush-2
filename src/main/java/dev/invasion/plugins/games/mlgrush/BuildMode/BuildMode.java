@@ -24,15 +24,6 @@ public class BuildMode {
         BoundingBoxActions.replace(Material.SANDSTONE, mapManager.getMap(chosenMap).getBoundingBox());
     }
 
-    private void runBuildMode() {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-
-            }
-        }.runTaskTimer(MLGRush.getInstance(), 0, 20);
-    }
 
     public ArrayList<Player> getBuilders() {
         return builders;

@@ -77,9 +77,11 @@ public class GameRunner implements Listener {
     private void playerDie(Player player) {
         player.setFallDistance(0);
         player.teleport(PlayerDataManager.getPlayerData(player).getTeam().getSpawn().getTpLocation());
-        MLGRush.getStatsManager().getPlayerStats(player).addDeath();
+        StatsManager statsManager = MLGRush.getStatsManager();
+        statsManager.getPlayerStats(player).addDeath();
+        statsManager.getGeneralStats().addTotalDeath();
+        statsManager.getMapStats(PlayerDataManager.getPlayerData(player).getMap()).addTotalDeaths();
         Inventories.loadGameInv(player); //give the Player his items knockbackstick and so on
-
     }
 
     //bed destroyed gives points and stats to the destroyer also resets the Map
@@ -106,6 +108,33 @@ public class GameRunner implements Listener {
             Inventories.loadGameInv(player1);
             player1.playSound(player.getLocation(), Sound.ENTITY_BAT_DEATH, SoundCategory.MASTER, 1, 1);
         }
+        if(playerTeam.getScore() >= game.getMap().getWinsNeeded()) {
+            //the team of the player has won
+            winGame(playerTeam, game);
+        }
+        statsManager.getPlayerStats(player).addBed();
+        statsManager.getGeneralStats().addTotalBed();
+        statsManager.getMapStats(game.getMap()).addTotalBed();
+
+    }
+
+    private void winGame(GameTeam team, Game game) {
+
+        for(Player player: team.getPlayers()) {
+            player.sendMessage(MessageCreator.prefix("You &6won&7 the Game || fritzibus ist ein L"));
+            MessageCreator.sendTitle(player, "&6You Won!", "&acongratulations <the Invasion Devs>", 70, true);
+            MLGRush.getStatsManager().getPlayerStats(player).addWin();
+        }
+        for(Player player: game.getPlayers()) {
+            if (PlayerDataManager.getPlayerData(player).getTeam() != team) {
+                player.sendMessage(MessageCreator.prefix("Team " + team.getName() + "&6won&7 the Game haha you're a noob"));
+                MessageCreator.sendTitle(player, "Team " + team.getName(), "&6&lWon &7you noob <the Invasion Devs>", 70, true);
+                MLGRush.getStatsManager().getPlayerStats(player).addLoos();
+            }
+
+        }
+
+        game.endGame();
 
     }
 

@@ -2,20 +2,40 @@ package dev.invasion.plugins.games.mlgrush.Stats;
 
 public class MapStats {
 
-    private int dateCreated;
+    private long dateCreated;
     private int playedGames;
     private int totalKills;
     private int totalDeaths;
     private int totalWins;
     private int totalLooses;
+    private int totalBed;
 
-    public int getDateCreated() {
+
+    public int getTotalBed() {
+        return totalBed;
+    }
+    public void addTotalBed() {
+        totalBed++;
+    }
+
+    public long getDateCreated() {
         return dateCreated;
     }
 
-    public void setDateCreated(int dateCreated) {
+    public void setDateCreated(long dateCreated) {
         this.dateCreated = dateCreated;
     }
+
+    public void addPlayedGames() {
+        playedGames++;
+    }
+    public void addTotalKill() {
+        totalKills++;
+    }
+    public void addTotalDeaths() {
+        totalDeaths++;
+    }
+
 
     public int getPlayedGames() {
         return playedGames;

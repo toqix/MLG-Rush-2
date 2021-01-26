@@ -1,5 +1,7 @@
 package dev.invasion.plugins.games.mlgrush.maps;
 
+import dev.invasion.plugins.games.mlgrush.MLGRush;
+
 import java.util.ArrayList;
 
 public class MapManager {
@@ -7,6 +9,7 @@ public class MapManager {
 
     public MapManager() {
         Maps = new ArrayList<gameMap>();
+
     }
 
     public ArrayList<gameMap> getMaps() {
@@ -25,6 +28,7 @@ public class MapManager {
 
     public void addMap(gameMap map) {
         Maps.add(map);
+        MLGRush.getStatsManager().getGeneralStats().setTotalMaps(Maps.size());
     }
 
     public gameMap getMap(int id) {

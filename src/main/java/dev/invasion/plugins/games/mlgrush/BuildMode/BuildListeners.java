@@ -19,6 +19,10 @@ public class BuildListeners implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         if(PlayerDataManager.getPlayerData(player).getState() == PlayerState.BUILD) {
+            if(event.getBlock().getType() == Material.SANDSTONE) {
+                event.setCancelled(true);
+                player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cYou can't use this Block to Build"));
+            }
             for (gameMap map : MLGRush.getMapManager().getMaps()) {
                 if (map.getMapState() == MapState.BUILD) {
                     for (Player player1 : PlayerDataManager.getPlayers(map)) {
@@ -38,10 +42,7 @@ public class BuildListeners implements Listener {
     public void onBLockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         if(PlayerDataManager.getPlayerData(player).getState() == PlayerState.BUILD) {
-            if(event.getBlock().getType() == Material.SANDSTONE) {
-                event.setCancelled(true);
-                player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cYou can't use this Block to Build"));
-            }
+
             for (gameMap map : MLGRush.getMapManager().getMaps()) {
                 if (map.getMapState() == MapState.BUILD) {
                     for (Player player1 : PlayerDataManager.getPlayers(map)) {

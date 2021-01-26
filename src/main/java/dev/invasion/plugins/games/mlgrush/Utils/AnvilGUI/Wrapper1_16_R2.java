@@ -1,13 +1,14 @@
 package dev.invasion.plugins.games.mlgrush.Utils.AnvilGUI;
 
-import net.minecraft.server.v1_15_R1.*;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_15_R1.event.CraftEventFactory;
+import dev.invasion.plugins.games.mlgrush.Utils.AnvilGUI.VersionWrapper;
+import net.minecraft.server.v1_16_R2.*;
+import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R2.event.CraftEventFactory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-public class Wrapper1_15_R1 implements VersionWrapper {
+public class Wrapper1_16_R2 implements VersionWrapper {
     private int getRealNextContainerId(Player player) {
         return toNMS(player).nextContainerCounter();
     }

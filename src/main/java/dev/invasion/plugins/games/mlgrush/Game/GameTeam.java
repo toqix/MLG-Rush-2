@@ -18,6 +18,7 @@ public class GameTeam extends Team {
 
     public GameTeam(Team team) {
         super(team.getColor());
+        score = 0;
         setBed(team.getBed());
         setSpawn(team.getSpawn());
     }

@@ -147,6 +147,11 @@ public final class MLGRush extends JavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(mapManager == null) mapManager = new MapManager();
+
+        if(statsManager == null) statsManager = new StatsManager();
+
+        if(playerSettingsManager == null) playerSettingsManager = new PlayerSettingsManager();
 
         for(gameMap map: mapManager.getMaps()) {
             map.setMapState(MapState.WAITING);
@@ -154,15 +159,14 @@ public final class MLGRush extends JavaPlugin {
         }
     }
     public static void save() {
-        statsManager.getGeneralStats().setTotalDeaths(1);
-        //statsManager.getPlayerStats(Bukkit.getPlayer("Zeck_do")).setBeds(1);
-        statsManager.getMapStats(0).setDateCreated(0);
+
         try {
             FileManager.save(getMapManager(), "Maps.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
+            Bukkit.broadcastMessage("deaths: " + statsManager.getGeneralStats().getTotalDeaths());
           FileManager.save(statsManager, "Stats.json");
         } catch (IOException e) {
             e.printStackTrace();

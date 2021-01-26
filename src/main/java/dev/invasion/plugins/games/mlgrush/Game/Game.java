@@ -7,11 +7,14 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Utils.Inventories;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
 import dev.invasion.plugins.games.mlgrush.maps.BoundingBoxActions;
+import dev.invasion.plugins.games.mlgrush.maps.MapState;
 import dev.invasion.plugins.games.mlgrush.maps.Team;
 
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -48,6 +51,9 @@ public class Game {
         running = false;
         //adding the first player to the first team
         join(player);
+
+        //setting the map to inGame so that it is blocked from build mode
+        map.setMapState(MapState.GAME);
     }
 
     public boolean join(Player player) {
@@ -87,29 +93,49 @@ public class Game {
 
     public void leave(Player player) {
         if (running) {
-            if(getPlayers().size() <= 2) {
+            if (getPlayers().size() <= 2) {
                 //this is not finished just to make debugging easier
 
                 //all this complicated shit to prevent java.util.ConcurrentModificationException
                 List<Player> players = new CopyOnWriteArrayList<>();
-                for(Player playerx: getPlayers()) {
+                for (Player playerx : getPlayers()) {
                     players.add(playerx);
                 }
                 //loop through the new List
-                for(Player player1: players) {
+                for (Player player1 : players) {
                     leavePlayer(player1);
                 }
                 GameManager.finishGame(this);
-            }else {
-                for(Player player1: getPlayers()) {
+            } else {
+                for (Player player1 : getPlayers()) {
                     player1.sendMessage(MessageCreator.prefix("&6" + player.getName() + "&7from Team " + PlayerDataManager.getPlayerData(player).getTeam().getName() + " &cleft&7 the Game"));
                 }
                 leavePlayer(player);
+
             }
         } else {
-           leavePlayer(player);
+            leavePlayer(player);
+
         }
     }
+
+    public void endGame() {
+        if (running) {
+            //all this complicated shit to prevent java.util.ConcurrentModificationException
+            List<Player> players = new CopyOnWriteArrayList<>();
+            for (Player playerx : getPlayers()) {
+                players.add(playerx);
+            }
+            //loop through the new List
+            for (Player player1 : players) {
+                player1.sendMessage(MessageCreator.prefix("&cGame end!"));
+                leavePlayerEnd(player1);
+            }
+            GameManager.finishGame(this);
+
+        }
+    }
+
     private void leavePlayer(Player player) {
         PlayerData playerData = PlayerDataManager.getPlayerData(player);
 
@@ -124,6 +150,21 @@ public class Game {
         player.teleport(MLGRush.getLobbySpawn().getTpLocation());
         player.sendMessage(MessageCreator.prefix("&cyou left the Game"));
         MessageCreator.sendTitle(player, "&6Game &cleft", "", 50, true);
+    }
+
+    private void leavePlayerEnd(Player player) {
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+
+        players.remove(player);
+        playerData.getTeam().getPlayers().remove(player);
+
+        playerData.setMap(null);
+        playerData.setGame(null);
+        playerData.setTeam(null);
+        playerData.setState(PlayerState.LOBBY);
+
+        player.teleport(MLGRush.getLobbySpawn().getTpLocation());
+        player.playSound(player.getLocation(), Sound.ENTITY_WITHER_DEATH, SoundCategory.HOSTILE, 1,1);
     }
 
     public void start() {

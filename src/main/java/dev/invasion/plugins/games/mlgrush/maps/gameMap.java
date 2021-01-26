@@ -7,7 +7,7 @@ public class gameMap {
     private SerializableLocation specSpawn;
 
 
-
+    private int id;
     private BoundingBox box;
     private String name;
     private String builder;
@@ -15,6 +15,7 @@ public class gameMap {
     private boolean isAvailable;
     private boolean isFinished;
     private MapState mapState;
+    private int winsNeeded;
 
     public gameMap(SerializableLocation specSpawn, BoundingBox box, String name) {
         this.specSpawn = specSpawn;
@@ -23,6 +24,23 @@ public class gameMap {
         this.box = box;
         this.teamManager = new TeamManager();
         builder = "Unknown";
+        setWinsNeeded(10);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getWinsNeeded() {
+        return winsNeeded;
+    }
+
+    public void setWinsNeeded(int winsNeeded) {
+        this.winsNeeded = winsNeeded;
     }
 
     public SerializableLocation getSpecSpawn() {

@@ -1,8 +1,10 @@
 package dev.invasion.plugins.games.mlgrush.Game;
 
+import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
+import dev.invasion.plugins.games.mlgrush.Stats.MapStats;
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 import org.bukkit.entity.Player;
 
@@ -18,6 +20,10 @@ public class GameManager {
     public static Game createGame(Player player, gameMap map) {
         if (map.finished()) {
             Game game = new Game(player, map);
+            MLGRush.getStatsManager().getGeneralStats().addTotalPlayedGame();
+            MapStats mapStats = MLGRush.getStatsManager().getMapStats(game.getMap());
+            mapStats.addPlayedGames();
+
             games.add(game);
             return game;
         }
@@ -53,6 +59,7 @@ public class GameManager {
             game.leave(player);
         }
     }
+
 
     public static ArrayList<Player> getAllPlayers() {
         ArrayList<Player> toReturn = new ArrayList<>();

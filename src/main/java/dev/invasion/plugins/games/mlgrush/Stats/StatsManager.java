@@ -1,5 +1,6 @@
 package dev.invasion.plugins.games.mlgrush.Stats;
 
+import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -21,11 +22,12 @@ public class StatsManager {
         return playerStatsHashMap.get(player.getUniqueId());
     }
 
-    public MapStats getMapStats(int id) {
-        if(!mapStatsHashMap.containsKey(id)) {
-            mapStatsHashMap.put(id, new MapStats());
+
+    public MapStats getMapStats(gameMap map) {
+        if(!mapStatsHashMap.containsKey(map.getId())) {
+            mapStatsHashMap.put(map.getId(), new MapStats());
         }
-        return mapStatsHashMap.get(id);
+        return mapStatsHashMap.get(map.getId());
     }
 
     public GeneralStats getGeneralStats() {

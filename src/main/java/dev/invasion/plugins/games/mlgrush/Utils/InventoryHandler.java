@@ -1,5 +1,6 @@
 package dev.invasion.plugins.games.mlgrush.Utils;
 
+import com.mojang.brigadier.Message;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildMode;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeInvs;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
@@ -51,7 +52,7 @@ public class InventoryHandler implements Listener {
     z: beds
     p: switch pages
     c: create a game + map id
-
+    d: set direction
     */
     private List<String> others = Arrays.asList("BOW");
 
@@ -158,6 +159,7 @@ public class InventoryHandler implements Listener {
                         }
                         SerializableLocation spawn = new SerializableLocation(clicked);
                         //get direction is still missing
+
                         team.setSpawn(spawn);
                         player.getInventory().setItem(0, new ItemStack(Material.AIR));
                         player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&7Spawnpoint of Team " + team.getName() + "&7 successfully set"));
@@ -166,12 +168,9 @@ public class InventoryHandler implements Listener {
                             @Override
                             public void run() {
                                 player.teleport(team.getSpawn().getTpLocation());
-                                new BukkitRunnable() {
-                                    @Override
-                                    public void run() {
-                                        InvOpener.openDelay(player, BuildModeInvs.TeamsInv(playerData.getMap()));
-                                    }
-                                }.runTaskLater(MLGRush.getInstance(), 10);
+                                MessageCreator.sendTitle(player, "Set direction", "look to the opposite bed", 30);
+                                player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&7Set the Spawn-direction, look to into the direction where the Spawn should look"));
+                                player.getInventory().setItem(0, InventoryHandler.createStack(Material.NETHER_STAR, "&7Set " + team.getName() + " Direction", Arrays.asList("&7Right click", "&7to set the Spawn direction", "&7to the curren facing direction"), "d(" + team.getColor().name() + ")", "d(" + team.getColor().name() + ")"));
                             }
                         }.runTaskLater(MLGRush.getInstance(), 10);
                         return true;
@@ -180,7 +179,8 @@ public class InventoryHandler implements Listener {
                     GameManager.createGame(player, MLGRush.getMapManager().getMap(Integer.parseInt(arguments)));
                     InvOpener.closeDelay(player);
                     break;
-
+                case 'd':
+                    BuildModeManager.setSpawnDirection(player, TeamColor.valueOf(arguments));
             }
         }
         return true;
@@ -195,7 +195,8 @@ public class InventoryHandler implements Listener {
 
     private void handleRightClick(char command, String arguments, Player player) {
         switch (command) {
-
+            case 'd':
+                BuildModeManager.setSpawnDirection(player, TeamColor.valueOf(arguments));
         }
     }
 

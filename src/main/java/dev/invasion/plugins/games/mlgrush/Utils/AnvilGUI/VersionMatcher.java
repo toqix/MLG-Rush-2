@@ -21,7 +21,7 @@ class VersionMatcher {
      * All available {@link VersionWrapper}s
      */
     private final List<Class<? extends VersionWrapper>> versions = Collections.singletonList(
-            Wrapper1_15_R1.class
+            Wrapper1_16_R2.class
     );
 
     /**

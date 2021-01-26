@@ -7,6 +7,7 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Stats.MapStats;
 import dev.invasion.plugins.games.mlgrush.Utils.AnvilGUI.AnvilGUI;
 import dev.invasion.plugins.games.mlgrush.Utils.InvOpener;
+import dev.invasion.plugins.games.mlgrush.Utils.Inventories;
 import dev.invasion.plugins.games.mlgrush.Utils.InventoryHandler;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
 import dev.invasion.plugins.games.mlgrush.maps.*;
@@ -17,6 +18,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,29 +133,38 @@ public class BuildModeManager {
 
         } else {
             BoundingBoxActions.deleteBox(box);
-            mapManager.addMap(new gameMap(location, box, text));
+            gameMap map = new gameMap(location, box, text);
+            mapManager.addMap(map);
+            map.setId(mapManager.getMaps().size() - 1);
+            MapStats mapStats = MLGRush.getStatsManager().getMapStats(map);
+            mapStats.setDateCreated(Instant.now().getEpochSecond());
             player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&7Map was created &asuccessfully"));
             MLGRush.getWorld().getBlockAt(location.getCopy().getLocation().add(0, -1, 0)).setType(Material.DIAMOND_BLOCK);
-            editMap(player, mapManager.getMap(mapManager.getMaps().size() - 1));
+            editMap(player, map);
         }
     }
 
     public static void editMap(Player player, gameMap map) {
-        PlayerData playerData = PlayerDataManager.getPlayerData(player);
-        map.setAvailable(false);
-        map.setMapState(MapState.BUILD);
-        playerData.setState(PlayerState.BUILD);
-        playerData.setMap(map);
+        Bukkit.broadcastMessage(map.getMapState().name());
+        if (map.getMapState() != MapState.GAME) {
+            PlayerData playerData = PlayerDataManager.getPlayerData(player);
+            map.setAvailable(false);
+            map.setMapState(MapState.BUILD);
+            playerData.setState(PlayerState.BUILD);
+            playerData.setMap(map);
 
-        BoundingBoxActions.replace(Material.SANDSTONE, map.getBoundingBox());
-        for(Team team : map.getTeamManager().getTeams()) {
-            if(team.getBed() != null) {
-                team.getBed().setBlock();
+            BoundingBoxActions.replace(Material.SANDSTONE, map.getBoundingBox());
+            for (Team team : map.getTeamManager().getTeams()) {
+                if (team.getBed() != null) {
+                    team.getBed().setBlock();
+                }
             }
+            player.teleport(map.getSpecSpawn().getTpLocation());
+            player.setGameMode(GameMode.CREATIVE);
+            player.setFlying(true);
+        } else {
+            player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cError you tried to edit a running Map"));
         }
-        player.teleport(map.getSpecSpawn().getTpLocation());
-        player.setGameMode(GameMode.CREATIVE);
-        player.setFlying(true);
     }
 
     public static void renameMap(Player player) {
@@ -280,6 +293,35 @@ public class BuildModeManager {
             map.getTeamManager().removeTeam();
             InvOpener.openDelay(player, BuildModeInvs.TeamsInv(map));
             player.sendMessage(MessageCreator.prefix("MLG-Rush-Build", "&cremoved&7 a Team"));
+        }
+    }
+
+    public static void setSpawnDirection(Player player, TeamColor color) {
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        if (playerData.getState() == PlayerState.BUILD) {
+            gameMap map = playerData.getMap();
+            //calculate yaw
+            float playerYaw = player.getLocation().getYaw();
+            int yaw = 0;
+            if(playerYaw >= 315 || playerYaw < 45) {
+                yaw = 0;
+            } else if (playerYaw >= 45 && playerYaw < 135) {
+                yaw = 90;
+            } else if (playerYaw >= 135 && playerYaw < 225) {
+                yaw = 180;
+            } else if (playerYaw >= 225 && playerYaw < 315) {
+                yaw = 270;
+            }
+
+            map.getTeamManager().getTeam(color).getSpawn().setYaw(yaw);
+            player.teleport(map.getTeamManager().getTeam(color).getSpawn().getTpLocation());
+            MessageCreator.sendTitle(player, "&6Successfully Set", "the Spawn direction", 50);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    InvOpener.openDelay(player, BuildModeInvs.BuildInv(map));
+                }
+            }.runTaskLater(MLGRush.getInstance(), 50);
         }
     }
 
