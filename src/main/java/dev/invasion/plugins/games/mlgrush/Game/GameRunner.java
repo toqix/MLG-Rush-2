@@ -22,6 +22,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -209,7 +211,30 @@ public class GameRunner implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasBlock()) {
             if (event.getClickedBlock().getType() == Material.RED_BED) {
-                // event.setCancelled(true);
+                 event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public  void onDamage(EntityDamageEvent event) {
+        //check if the damaged entity is a Player
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            //check if the Player is inside a running Game
+            if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.GAME) {
+                event.setDamage(0);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerHungerLevelChange(FoodLevelChangeEvent event) {
+        //check if the entity is a Player
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.GAME) {
+                player.setFoodLevel(20);
             }
         }
     }

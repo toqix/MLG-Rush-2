@@ -5,6 +5,7 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Stats.MapStats;
+import dev.invasion.plugins.games.mlgrush.maps.MapState;
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 import org.bukkit.entity.Player;
 
@@ -46,9 +47,6 @@ public class GameManager {
     }
 
     public static void finishGame(Game game) {
-        for (Player player : game.getPlayers()) {
-            leaveGame(player);
-        }
         games.remove(game);
     }
 
@@ -68,6 +66,4 @@ public class GameManager {
         }
         return toReturn;
     }
-
-
 }

@@ -16,7 +16,7 @@ public class startCommand implements CommandExecutor {
             Player player = (Player) commandSender;
             PlayerData playerData = PlayerDataManager.getPlayerData(player);
             if (playerData.getState() == PlayerState.GAME) {
-                if (!playerData.getGame().isRunning()) {
+                if (!playerData.getGame().isRunning() && !playerData.getGame().isStarting()) {
                     playerData.getGame().start();
                 }else {
                     player.sendMessage(MessageCreator.prefix("&cYou can't start a running Game"));

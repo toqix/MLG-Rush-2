@@ -145,10 +145,15 @@ public class BuildModeManager {
     }
 
     public static void editMap(Player player, gameMap map) {
-        Bukkit.broadcastMessage(map.getMapState().name());
         if (map.getMapState() != MapState.GAME) {
             PlayerData playerData = PlayerDataManager.getPlayerData(player);
             map.setAvailable(false);
+            //give the current editor a short message that a new Player joined
+            if (map.getMapState() == MapState.BUILD) {
+                for(Player player1 : PlayerDataManager.getPlayers(map)) {
+                    player1.sendMessage(MessageCreator.prefix("MLG-Rush-Build", player.getName() + " &6joined&7 you building!"));
+                }
+            }
             map.setMapState(MapState.BUILD);
             playerData.setState(PlayerState.BUILD);
             playerData.setMap(map);
