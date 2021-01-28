@@ -12,6 +12,7 @@ import dev.invasion.plugins.games.mlgrush.maps.Team;
 
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -28,6 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Game {
     private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<Player> spectators = new ArrayList<>();
     private gameMap map;
     private int teamAmount;
     private int teamSize;
@@ -81,6 +83,7 @@ public class Game {
             playerData.setState(PlayerState.GAME);
             playerData.setGame(this);
             playerData.setTeam(smallestTeam);
+            player.getInventory().clear();
             addPlayer(smallestTeam, player);
             //output additional information for debug
             if (playerData.isDebugOutput()) {
@@ -142,30 +145,83 @@ public class Game {
 
     public void endGame() {
             //all this complicated shit to prevent java.util.ConcurrentModificationException
-            List<Player> players = new CopyOnWriteArrayList<>();
-            for (Player player1 : getPlayers()) {
-                players.add(player1);
-            }
-            //loop through the new List
+            List<Player> players = new CopyOnWriteArrayList<>(getPlayers());
+            List<Player> specs = new CopyOnWriteArrayList<>(spectators);
+            //loop through the new List7
             for (Player player1 : players) {
                 player1.sendMessage(MessageCreator.prefix("&cGame end!"));
                 leavePlayer(player1);
                 player1.playSound(player1.getLocation(), Sound.ENTITY_WITHER_DEATH, SoundCategory.HOSTILE, 1,1);
             }
+            for (Player player1 : specs) {
+                player1.sendMessage(MessageCreator.prefix("The game you were spectating ended"));
+                leaveSpectator(player1);
+            }
             map.setMapState(MapState.WAITING);
             GameManager.finishGame(this);
     }
 
+    public void joinSpectator(Player player) {
+        //set all information for player
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        playerData.setState(PlayerState.SPECTATING);
+        playerData.setMap(map);
+        playerData.setGame(this);
+        spectators.add(player);
+        //set the right modes
+        for(Player player1:players) {
+            //make the spectaor invisible to playing players
+            player1.hidePlayer(MLGRush.getInstance(), player);
+        }
+        //set the Player Gamemode to spectators mode
+        player.setGameMode(GameMode.SURVIVAL);
+        player.setAllowFlight(true);
+
+        //actually add the player
+        player.teleport(map.getSpecSpawn().getTpLocation());
+        player.sendMessage(MessageCreator.prefix("You are now spectating " + map.getName()));
+        MessageCreator.sendTitle(player, "&6Spectating", "Enjoy the Game", 40);
+    }
+
+    public void leaveSpectator(Player player) {
+        //reset player data
+        PlayerData playerData = PlayerDataManager.getPlayerData(player);
+        playerData.setState(PlayerState.LOBBY);
+        playerData.setMap(null);
+        playerData.setGame(null);
+        //remove spec from Game
+        spectators.remove(player);
+        //unhide the spec
+        for(Player player1:players) {
+            //make the spectaor visbile again
+            player1.showPlayer(MLGRush.getInstance(), player);
+        }
+        //set game mode back to Lobby
+        player.setAllowFlight(false);
+        player.setGameMode(GameMode.SURVIVAL);
+        player.getInventory().clear();
+        //move spec back to the Lobby
+        player.teleport(MLGRush.getLobbySpawn().getTpLocation());
+        player.sendMessage(MessageCreator.prefix("You stopped spectating"));
+    }
+
     private void leavePlayer(Player player) {
         PlayerData playerData = PlayerDataManager.getPlayerData(player);
-
+        //remove player from game
         players.remove(player);
-        playerData.getTeam().getPlayers().remove(player);
 
+        //reset player data
+        playerData.getTeam().getPlayers().remove(player);
         playerData.setMap(null);
         playerData.setGame(null);
         playerData.setTeam(null);
         playerData.setState(PlayerState.LOBBY);
+        //make spectator visible to the Player again
+        for(Player spec:spectators) {
+            player.showPlayer(MLGRush.getInstance(), spec);
+        }
+        //clear and teleport to lobby
+        player.getInventory().clear();
         player.teleport(MLGRush.getLobbySpawn().getTpLocation());
     }
 
@@ -214,18 +270,18 @@ public class Game {
                         //send a title that the game has started
                         MessageCreator.sendTitle(player, "let the &6Games &abegin&f&l!", "&fMap:&6 " + map.getName(), 50, true);
                         player.sendMessage(MessageCreator.prefix("the Game started, playing: &6" + map.getName()));
-
                         //get the Playerdata of every player
                         PlayerData playerData = PlayerDataManager.getPlayerData(player);
                         //teleport the Player to it's spawn
                         player.teleport(playerData.getTeam().getSpawn().getTpLocation());
+                        //set the PlayersGame Mode to Survival
+                        player.setGameMode(GameMode.SURVIVAL);
                         //give the Player the Game inventory
                         Inventories.loadGameInv(player);
                         //set the game to running
                         running = true;
                         isStarting = false;
                     }
-
                 }
             }.runTaskLater(MLGRush.getInstance(), 100);
         }
@@ -238,6 +294,8 @@ public class Game {
             MessageCreator.sendTitle(player, "&6Playing", "&f&l" + time + "  &fplaying: &6&l" + map.getName(), 40, true);
         }
     }
+
+    public ArrayList<Player> getSpectators() {return  spectators;}
 
     public boolean isStarting() {
         return isStarting;

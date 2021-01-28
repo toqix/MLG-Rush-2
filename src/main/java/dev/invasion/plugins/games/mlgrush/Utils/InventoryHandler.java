@@ -4,6 +4,7 @@ import com.mojang.brigadier.Message;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildMode;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeInvs;
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
+import dev.invasion.plugins.games.mlgrush.Game.Game;
 import dev.invasion.plugins.games.mlgrush.Game.GameManager;
 import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
@@ -53,6 +54,7 @@ public class InventoryHandler implements Listener {
     p: switch pages
     c: create a game + map id
     d: set direction
+    v: Spectate map
     */
     private List<String> others = Arrays.asList("BOW");
 
@@ -181,6 +183,13 @@ public class InventoryHandler implements Listener {
                     break;
                 case 'd':
                     BuildModeManager.setSpawnDirection(player, TeamColor.valueOf(arguments));
+                case 'v':
+                    gameMap map = MLGRush.getMapManager().getMap(Integer.parseInt(arguments));
+                    Game game = GameManager.getGame(map);
+                    if (game != null) {
+                        //join spectator logic
+                        game.joinSpectator(player);
+                    }
             }
         }
         return true;

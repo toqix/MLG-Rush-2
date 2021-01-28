@@ -1,6 +1,7 @@
 package dev.invasion.plugins.games.mlgrush.Commands;
 
 import dev.invasion.plugins.games.mlgrush.Game.GameManager;
+import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
@@ -15,10 +16,13 @@ public class leaveCommand implements CommandExecutor {
 
         if(commandSender instanceof Player) {
             Player player = (Player) commandSender;
-            if(PlayerDataManager.getPlayerData(player).getState() == PlayerState.GAME) {
+            PlayerData playerData = PlayerDataManager.getPlayerData(player);
+            if(playerData.getState() == PlayerState.GAME) {
                 GameManager.leaveGame(player);
                 //player.sendMessage(MessageCreator.prefix("You &cleft &7the&6 Game"));
                 //MessageCreator.sendTitle(player, "&7You &cleft&7","the &6Game", 50, true);
+            } else if(playerData.getState() == PlayerState.SPECTATING) {
+                playerData.getGame().leaveSpectator(player);
             }
         }
 

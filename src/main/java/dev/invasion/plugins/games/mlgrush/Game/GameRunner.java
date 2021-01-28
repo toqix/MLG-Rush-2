@@ -22,9 +22,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class GameRunner implements Listener {
@@ -55,6 +57,7 @@ public class GameRunner implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
+                //loop to display actionbar for all playing players
                 for (Player player : GameManager.getAllPlayers()) {
                     if (PlayerDataManager.getPlayerData(player).getGame().isRunning()) {
                         PlayerData playerData = PlayerDataManager.getPlayerData(player);
@@ -68,6 +71,24 @@ public class GameRunner implements Listener {
                             }
                         }
                         MessageCreator.sendActionbar(player, info.toString());
+                    }
+                }
+
+                //loop to display actionbar to all Spectators
+                for (Player player : GameManager.getSpectators()) {
+                    PlayerData playerData = PlayerDataManager.getPlayerData(player);
+                    //create the actionBar String
+                    StringBuilder actionBar = new StringBuilder();
+                    actionBar.append("&6Spectating: &7 ").append(playerData.getMap().getName());
+                    for (GameTeam gameTeam : playerData.getGame().getTeams()) {
+                        actionBar.append("  &7|").append("  &6Team ").append(gameTeam.getName()).append("&7: &0&l").append(gameTeam.getScore());
+                    }
+                    //set the Actionbar
+                    MessageCreator.sendActionbar(player, actionBar.toString());
+
+                    //Prevent Spectator from falling to void/tp him back to lobby spawn if he/she falls to low
+                    if(player.getLocation().getY() < 70) {
+                        player.teleport(playerData.getMap().getSpecSpawn().getTpLocation());
                     }
                 }
             }
@@ -135,9 +156,7 @@ public class GameRunner implements Listener {
             }
 
         }
-
         game.endGame();
-
     }
 
 
@@ -182,6 +201,8 @@ public class GameRunner implements Listener {
                     event.setCancelled(true);
                 }
             }
+        } else if (playerData.getState() == PlayerState.SPECTATING) {
+            event.setCancelled(true);
         }
     }
 
@@ -204,6 +225,8 @@ public class GameRunner implements Listener {
                     event.setCancelled(true);
                 }
             }
+        }else if (playerData.getState() == PlayerState.SPECTATING) {
+            event.setCancelled(true);
         }
     }
 
@@ -221,9 +244,29 @@ public class GameRunner implements Listener {
         //check if the damaged entity is a Player
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+            PlayerData playerData = PlayerDataManager.getPlayerData(player);
             //check if the Player is inside a running Game
-            if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.GAME) {
+            if (playerData.getState() == PlayerState.GAME) {
+                //get damage cause
                 event.setDamage(0);
+            }else if (playerData.getState() == PlayerState.SPECTATING) {
+                event.setCancelled(true);
+            }
+
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        //check if both entites are players
+        if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+            //set a damger and a damaged player
+            Player damaged = (Player) event.getEntity();
+            Player damager = (Player) event.getDamager();
+
+            //cancel the event if the damager is a spectator
+            if(PlayerDataManager.getPlayerData(damager).getState() == PlayerState.SPECTATING) {
+                event.setCancelled(true);
             }
         }
     }
@@ -233,9 +276,8 @@ public class GameRunner implements Listener {
         //check if the entity is a Player
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
-            if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.GAME) {
-                player.setFoodLevel(20);
-            }
+            //reset food level
+            player.setFoodLevel(20);
         }
     }
 

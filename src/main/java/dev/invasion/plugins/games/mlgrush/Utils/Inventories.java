@@ -1,9 +1,12 @@
 package dev.invasion.plugins.games.mlgrush.Utils;
 
+import dev.invasion.plugins.games.mlgrush.Game.Game;
+import dev.invasion.plugins.games.mlgrush.Game.GameManager;
 import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
+import dev.invasion.plugins.games.mlgrush.maps.MapManager;
 import dev.invasion.plugins.games.mlgrush.maps.MapState;
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
 import org.bukkit.ChatColor;
@@ -15,11 +18,40 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
 public class Inventories {
+
+    public static Inventory SpectateGameInv() {
+        Inventory inv = InventoryHandler.createInventory("Choose a §6Game §7to spectate");
+
+        for (int i = 9; i < 36; i++) {
+            inv.setItem(i, new ItemStack(Material.AIR));
+        }
+
+        for (int i = 0; i < 27; i++) {
+            int slot = i + 9;
+            if (GameManager.getGames().size() > i) {
+                Game game = GameManager.getGames().get(i);
+                if (game.isRunning()) {
+                    ArrayList<String> playerNames = new ArrayList<>();
+                    playerNames.add("&7&lPlayers");
+                    for(Player player : game.getPlayers()) {
+                        playerNames.add("&7" + player.getName());
+                    }
+                    inv.setItem(slot, InventoryHandler.createStack(Material.SANDSTONE, "Spectate Game " + i, playerNames, "v(" + game.getMap().getId() +")"));
+                }else {
+                    inv.setItem(slot, InventoryHandler.createStack(Material.COBBLESTONE, "&7Game has &cnot &7started yet"));
+                }
+            }
+        }
+
+        return inv;
+    }
+
     public static Inventory CreateMap(Player player) {
         Inventory inv = InventoryHandler.createInventory("Choose a §6Map");
 

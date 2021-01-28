@@ -4,5 +4,6 @@ public enum PlayerState {
     LOBBY,
     BUILD,
     GAME,
+    SPECTATING,
     WAITING
 }

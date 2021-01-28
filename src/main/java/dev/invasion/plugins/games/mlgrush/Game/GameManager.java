@@ -18,6 +18,15 @@ public class GameManager {
         return games;
     }
 
+    public static Game getGame(gameMap map) {
+        for(Game game : games) {
+            if (game.getMap() == map) {
+                return game;
+            }
+        }
+        return null;
+    }
+
     public static Game createGame(Player player, gameMap map) {
         if (map.finished()) {
             Game game = new Game(player, map);
@@ -29,6 +38,14 @@ public class GameManager {
             return game;
         }
         return null;
+    }
+
+    public static ArrayList<Player> getSpectators() {
+        ArrayList<Player> toReturn = new ArrayList<>();
+        for(Game game : games) {
+            toReturn.addAll(game.getSpectators());
+        }
+        return  toReturn;
     }
 
     public static void joinGame(Player player, Game game) {
