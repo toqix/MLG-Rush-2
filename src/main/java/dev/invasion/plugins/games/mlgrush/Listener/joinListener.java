@@ -22,6 +22,7 @@ public class joinListener implements Listener {
         Player player = event.getPlayer();
         PlayerData playerData = PlayerDataManager.getPlayerData(player);
         MLGRush.setWorld(player.getWorld());
+        player.setFoodLevel(20);
         event.setJoinMessage("Minequafter " + event.getPlayer().getName() + " sagt Grüßgott");
         player.teleport(MLGRush.getLobbySpawn().getTpLocation());
         if(playerData.getState() == PlayerState.BUILD) {

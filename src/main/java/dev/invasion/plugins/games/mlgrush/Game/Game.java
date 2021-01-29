@@ -4,6 +4,10 @@ import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.BetterItem;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.BetterItemDescription;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.EventType;
+import dev.invasion.plugins.games.mlgrush.Utils.InvOpener;
 import dev.invasion.plugins.games.mlgrush.Utils.Inventories;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
 import dev.invasion.plugins.games.mlgrush.maps.BoundingBoxActions;
@@ -21,10 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Game {
@@ -164,23 +165,37 @@ public class Game {
     public void joinSpectator(Player player) {
         //set all information for player
         PlayerData playerData = PlayerDataManager.getPlayerData(player);
-        playerData.setState(PlayerState.SPECTATING);
-        playerData.setMap(map);
-        playerData.setGame(this);
-        spectators.add(player);
-        //set the right modes
-        for(Player player1:players) {
-            //make the spectaor invisible to playing players
-            player1.hidePlayer(MLGRush.getInstance(), player);
-        }
-        //set the Player Gamemode to spectators mode
-        player.setGameMode(GameMode.SURVIVAL);
-        player.setAllowFlight(true);
+        if (playerData.getState() == PlayerState.LOBBY) {
+            playerData.setState(PlayerState.SPECTATING);
+            playerData.setMap(map);
+            playerData.setGame(this);
+            spectators.add(player);
+            //set the right modes
+            for (Player player1 : players) {
+                //make the spectaor invisible to playing players
+                player1.hidePlayer(MLGRush.getInstance(), player);
+            }
+            //set the Player Gamemode to spectators mode
+            player.setGameMode(GameMode.SURVIVAL);
+            player.setAllowFlight(true);
+            //give the spectator the Compass to search players
+            player.getInventory().setItem(0, new BetterItem(itemClickEvent -> {
+                    PlayerData specData = PlayerDataManager.getPlayerData(player);
+                    if (specData.getState() == PlayerState.SPECTATING && itemClickEvent.getType() == EventType.EXTERNAL) {
+                        InvOpener.openDelay(player, Inventories.SpectateFindPlayerInv(specData.getGame()));
+                    }
+                return true;
+            }, Material.COMPASS)
+                    .setName("Teleporter")
+                    .setGlint(false)
+                    .create(new BetterItemDescription("Open Teleporter", Arrays.asList("Displays a Teleporter", "which can be used to", "teleport yourself to players")))
+            );
 
-        //actually add the player
-        player.teleport(map.getSpecSpawn().getTpLocation());
-        player.sendMessage(MessageCreator.prefix("You are now spectating " + map.getName()));
-        MessageCreator.sendTitle(player, "&6Spectating", "Enjoy the Game", 40);
+            //actually add the player
+            player.teleport(map.getSpecSpawn().getTpLocation());
+            player.sendMessage(MessageCreator.prefix("You are now spectating " + map.getName()));
+            MessageCreator.sendTitle(player, "&6Spectating", "Enjoy the Game", 40);
+        }
     }
 
     public void leaveSpectator(Player player) {

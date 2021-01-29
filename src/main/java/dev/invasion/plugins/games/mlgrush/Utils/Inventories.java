@@ -6,6 +6,9 @@ import dev.invasion.plugins.games.mlgrush.MLGRush;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.BetterItem;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.BetterItemDescription;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.EventType;
 import dev.invasion.plugins.games.mlgrush.maps.MapManager;
 import dev.invasion.plugins.games.mlgrush.maps.MapState;
 import dev.invasion.plugins.games.mlgrush.maps.gameMap;
@@ -24,6 +27,30 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class Inventories {
+
+    public static Inventory SpectateFindPlayerInv(Game game) {
+        Inventory inv = InventoryHandler.createInventory("Teleport to");
+
+        for(int i = 9; i < 45; i++) {
+            inv.setItem(i, new ItemStack(Material.AIR));
+        }
+        int count = 0;
+        for(Player player: game.getPlayers()) {
+            count++;
+            inv.setItem(count+9, new BetterItem((itemClickEvent -> {
+                Player user = itemClickEvent.getPlayer();
+                user.teleport(player);
+                return true;
+            }), Material.PLAYER_HEAD)
+                    .setGlint(true)
+                    .setName("&6" + player.getName())
+                    .create(new BetterItemDescription("Teleport", "Statistics", Collections.singletonList("Teleports you to " + player.getName())))
+
+            );
+        }
+
+        return inv;
+    }
 
     public static Inventory SpectateGameInv() {
         Inventory inv = InventoryHandler.createInventory("Choose a §6Game §7to spectate");

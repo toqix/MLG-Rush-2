@@ -14,7 +14,9 @@ public class spectateCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            InvOpener.openDelay(player, Inventories.SpectateGameInv());
+            if (PlayerDataManager.getPlayerData(player).getState() == PlayerState.LOBBY) {
+                InvOpener.openDelay(player, Inventories.SpectateGameInv());
+            }
         }
         return true;
     }

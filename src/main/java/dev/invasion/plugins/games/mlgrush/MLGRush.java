@@ -1,24 +1,33 @@
 package dev.invasion.plugins.games.mlgrush;
 
 import dev.invasion.plugins.games.mlgrush.BuildMode.BuildListeners;
+import dev.invasion.plugins.games.mlgrush.BuildMode.BuildModeManager;
 import dev.invasion.plugins.games.mlgrush.Commands.*;
 import dev.invasion.plugins.games.mlgrush.Game.Game;
 import dev.invasion.plugins.games.mlgrush.Game.GameManager;
 import dev.invasion.plugins.games.mlgrush.Game.GameRunner;
 import dev.invasion.plugins.games.mlgrush.Listener.joinListener;
+import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerData;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerDataManager;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerSettings;
 import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerSettingsManager;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.BetterItemManager;
+import dev.invasion.plugins.games.mlgrush.Utils.BetterItem.GlowEnchant;
 import dev.invasion.plugins.games.mlgrush.Utils.File.FileManager;
 import dev.invasion.plugins.games.mlgrush.Utils.InventoryHandler;
+import dev.invasion.plugins.games.mlgrush.Utils.KeyAssistant;
 import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.time.Instant;
 
 public final class MLGRush extends JavaPlugin {
     private static World mainworld;
@@ -30,6 +39,8 @@ public final class MLGRush extends JavaPlugin {
     private static PlayerSettingsManager playerSettingsManager;
 
     private static SerializableLocation lobbySpawn = new SerializableLocation(0, 100, 0);
+
+    private static long startup;
 
     @Override
     public void onEnable() {
@@ -44,6 +55,9 @@ public final class MLGRush extends JavaPlugin {
         listenerRegistration();
         //hardcode Map
         load();
+        registerGlow();
+        startup = Instant.now().getEpochSecond() - 1;
+
         this.getLogger().info("MLG-Rush Rewrite enabled");
 
     }
@@ -125,7 +139,7 @@ public final class MLGRush extends JavaPlugin {
         manager.registerEvents(new InventoryHandler(), this);
         manager.registerEvents(new BuildListeners(), this);
         manager.registerEvents(getGameRunner(), this);
-
+        manager.registerEvents(new BetterItemManager(), this);
     }
 
     public static void load() {
@@ -178,8 +192,56 @@ public final class MLGRush extends JavaPlugin {
         }
     }
 
+    //fritz shit
+    private void registerGlow() {
+        try {
+            Field f = Enchantment.class.getDeclaredField("acceptingNew");
+            f.setAccessible(true);
+            f.set(null, true);
+        } catch (Exception e) {
+            this.getLogger().warning("Error while adding glimmer enchantment (Accessing field)");
+            e.printStackTrace();
+        }
+        try {
+            if(Enchantment.getByKey(KeyAssistant.getKey("glow")) == null) {
+                GlowEnchant glow = new GlowEnchant(KeyAssistant.getKey("glow"));
+                Enchantment.registerEnchantment(glow);
+            }
+        } catch (IllegalArgumentException ex) {
+            this.getLogger().warning("Something MAY have gone wrong. As long as glimmering items work, just dont care.");
+            ex.printStackTrace();
+        }
+        catch (Exception e) {
+            this.getLogger().warning("Error while adding glimmer enchantment (Adding enchantment)");
+            e.printStackTrace();
+        }
+
+    }
+    public static Enchantment getGlow() {
+        return new GlowEnchant(KeyAssistant.getKey("glow"));
+    }
+
+    public static long getStartup() {
+        return startup;
+    }
+
     @Override
     public void onDisable() {
+        //remove all players from games
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            PlayerData playerData = PlayerDataManager.getPlayerData(player);
+            switch (playerData.getState()) {
+                case GAME:
+                case WAITING:
+                    playerData.getGame().leave(player);
+                    break;
+                case BUILD:
+                    BuildModeManager.leaveBuild(player);
+                case SPECTATING:
+                    playerData.getGame().leaveSpectator(player);
+            }
+        }
+
         // Plugin shutdown logic
         save();
     }
