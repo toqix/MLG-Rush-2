@@ -7,10 +7,7 @@ import dev.invasion.plugins.games.mlgrush.PlayerData.PlayerState;
 import dev.invasion.plugins.games.mlgrush.Stats.StatsManager;
 import dev.invasion.plugins.games.mlgrush.Utils.Inventories;
 import dev.invasion.plugins.games.mlgrush.Utils.MessageCreator;
-import dev.invasion.plugins.games.mlgrush.maps.BoundingBoxActions;
-import dev.invasion.plugins.games.mlgrush.maps.Respawn;
-import dev.invasion.plugins.games.mlgrush.maps.SerializableLocation;
-import dev.invasion.plugins.games.mlgrush.maps.Team;
+import dev.invasion.plugins.games.mlgrush.maps.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -226,6 +223,23 @@ public class GameRunner implements Listener {
                     event.setCancelled(true);
                 }
             }
+            //Spawn protection
+            for (Team team : playerData.getGame().getTeams()) {
+                SerializableLocation spawn = team.getSpawn();
+
+                if(playerData.isDebugOutput()) {
+                    player.sendMessage(MessageCreator.prefix("Debug", "Team " + team.getName() + "&7: x:" + spawn.getX() + " y:" + spawn.getY() + " z:" + spawn.getZ()));
+                    player.sendMessage(MessageCreator.prefix("Debug", "Block: x:" + block.getLocation().getX() + " y:" + block.getLocation().getY() + " z:" + block.getLocation().getZ()));
+                }
+
+                //check if block is in a spawn
+                if(spawn.compare(new SerializableLocation(block))|| spawn.getCopy().add(0, 1, 0).compare(new SerializableLocation(block))) {
+                    //block placed is in spawn
+                    player.sendMessage(MessageCreator.prefix("&cCannot place block on a Spawn"));
+                    event.setCancelled(true);
+                }
+            }
+
         }else if (playerData.getState() == PlayerState.SPECTATING) {
             event.setCancelled(true);
         }

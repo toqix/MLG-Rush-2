@@ -149,4 +149,6 @@ public class SerializableLocation {
     public Block getBlock() {
         return MLGRush.getWorld().getBlockAt(getLocation());
     }
+
+    public boolean compare(SerializableLocation to) { return (to.getX() == x && to.getY() == y && to.getZ() == z); }
 }

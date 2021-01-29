@@ -39,7 +39,7 @@ public class Inventories {
             count++;
             inv.setItem(count+9, new BetterItem((itemClickEvent -> {
                 Player user = itemClickEvent.getPlayer();
-                user.teleport(player);
+                user.teleport(player.getLocation().clone().add(0, 3, 0));
                 return true;
             }), Material.PLAYER_HEAD)
                     .setGlint(true)
